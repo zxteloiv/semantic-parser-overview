@@ -7,20 +7,29 @@
 % parse tree
 \usepackage[nocenter]{qtree}
 \usepackage{tree-dvips}
+\usepackage{amsmath}
 
 %\usecolortheme{default}
 
 \title[]{Semantic Parsing Methods}
 \subtitle{An Overview}
 \author {Xiang Zhang}
-\institute {
-    NLPR\\
-    Institute of Automation
-}
+%\institute {
+%    NLPR\\
+%    Institute of Automation
+%}
 \date{2016.08}
 %\logo{\includegraphics[height=1.5cm]{lion-logo.png}}
 
 %------------------------------------------------------------
+\AtBeginSection {
+    \begin{frame}
+        \frametitle{Agenda}
+        
+        % current subsection / other subsections of current section / other subsections
+        \tableofcontents[sectionstyle=show/shaded,subsectionstyle=hide/hide/hide]
+    \end{frame}
+}
 \AtBeginSubsection {
     \begin{frame}
         \frametitle{Agenda}
@@ -30,7 +39,6 @@
     \end{frame}
 }
 %------------------------------------------------------------
-
 
 \begin{document}
 
@@ -48,16 +56,147 @@
 
 \section{Semantics}
 
-\subsection{Background}
-
 \begin{frame}
+    \frametitle{Background}
+
+    When it comes to the understanding of natural language sentences, NLP researchers 
+    solve it in various granularities.
+
+    These tasks differ in the amount of information they use.
+
+    \begin{itemize}
+        \item <1-> Information Extraction (less informative) \\
+            \begin{center}
+                \emph{is\_a(Obama, PRESIDENT)}
+            \end{center}
+
+        \item <2-> Summarization (modestly informative) \\
+            \begin{center}
+            \emph{Obama wins.}
+            \end{center}
+
+        \item <3-> Semantic Parsing (exact matching) \\
+            \begin{center}
+            $\exists e . beat(e) \wedge Sub(e, Obama) \wedge Obj(e, Romney)$
+            \end{center}
+            
+    \end{itemize}
+
+    \uncover<4->{\begin{block}{Caveat}
+        \emph{Semantic} here is more of \emph{composition} than telling apart
+        from \emph{word senses}.
+    \end{block}}
 \end{frame}
 
-\subsection{Representations}
+\begin{frame}
+    \frametitle{Semantic Parsing Task}
+
+    The key task of semantic parsing is to find an $f$ such that
+
+    \[
+        f: Sentence \to LogicForm
+    \]
+
+    \pause
+
+    Generally, there are 3 aspects a semantic parser need take into consideration:
+
+    \begin{itemize}
+        \item Modelling: how to represent a logic form
+        \item Parsing: design a grammar and parsing algorithm
+        \item Learning: use supervision to fix parameters
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Logic Form from Example}
+
+    \begin{itemize}
+
+        \item <2->
+            Brutus stabs Caesar. \\
+            stab(Brutus, Caesar) \structure{predicate}
+
+        \item <3->
+            Brutus stabs Caesar with a knife. \\
+            stab(Brutus, Caesar, \alert{knife}) \structure{n-ary predicate}
+
+        \item <4->
+            Brutus stabs Caesar in the agora. \\
+            stab(Brutus, Caesar, \alert{agora}) \structure{ambiguous predicate}
+
+        \item <5->
+            Brutus stabs Caesar in the agora with a knife. \\
+            stab(Brutus, Caesar) \& \alert{with}(knife) \& \alert{in}(agora)
+            \structure{move adjunct apart}
+
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Logic Form from Example}
+
+    \begin{itemize}
+        \item <1-> Brutus stabs Caesar in the agora with a knife. \\
+            stab(Brutus, Caesar) \& with(knife) \& in(agora)
+
+        \item <2-> Brutus stabs Caesar with a knife in the agora and twisted it hard. \\
+            stab(Brutus, Caesar) \& with(knife) \& in(agora) \& twist(Brutus, knife) \& hard
+
+    \end{itemize}
+
+    \uncover <3-> {
+        The standard predicate calculus has problems.
+
+        \begin{itemize}
+            \item unable to refer to predicates
+            \item natural language are flexible in the number of arguments
+                \begin{itemize}
+                    \item Pass the axe.
+                    \item Pass \alert{me} the axe.
+                \end{itemize}
+        \end{itemize}
+    }
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Davidsonian Representation}
+
+    Semantic is characterized in \emph{events}.
+    We don't know an event beforehand, thus we \alert{existentially quantify} it.
+
+    \begin{itemize}
+
+        \item Brutus stabs Caesar with a knife in the agora and twisted it hard.
+            \begin{gather*}
+                \exists e . stab(e, Brutus, Caesar) \wedge with(e, knife) \wedge in(e, agora)\\
+                \wedge (\exists e' . twist(e', Brutus, knife) \wedge hard(e'))
+            \end{gather*}
+
+        \item Caesar is stabbed.
+            \[
+                \exists x \exists e . stab(e, x, Caesar)
+            \]
+
+            Missing arguments are left with \alert{placeholders}.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{neo-Davidsonian Representation}
+
+
+\end{frame}
 
 \section{Parsing}
 
 \begin{frame}
+    empty
 \end{frame}
 
 \section{Sample Slides}
@@ -89,23 +228,23 @@ And finally everything will be there
 %---------------------------------------------------------
 %Highlighting text
 \begin{frame}
-\frametitle{Sample frame title}
+    \frametitle{Sample frame title}
 
-In this slide, some important text will be
-\alert{highlighted} beause it's important.
-Please, don't abuse it.
+    In this slide, some important text will be
+    \alert{highlighted} beause it's important.
+    Please, don't abuse it.
 
-\begin{block}{Remark}
-Sample text
-\end{block}
+    \begin{block}{Remark}
+    Sample text
+    \end{block}
 
-\begin{alertblock}{Important theorem}
-Sample text in red box
-\end{alertblock}
+    \begin{alertblock}{Important theorem}
+    Sample text in red box
+    \end{alertblock}
 
-\begin{examples}
-Sample text in green box. "Examples" is fixed as block title.
-\end{examples}
+    \begin{examples}
+    Sample text in green box. "Examples" is fixed as block title.
+    \end{examples}
 \end{frame}
 %---------------------------------------------------------
 
