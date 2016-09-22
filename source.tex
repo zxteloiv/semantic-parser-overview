@@ -8,6 +8,8 @@
 \usepackage{tree-dvips}
 \usepackage{amsmath}
 
+\usepackage{listings}
+
 \title[]{Semantic Parsing Methods}
 \subtitle{An Overview}
 \author {Xiang Zhang}
@@ -654,7 +656,148 @@
 \section{Parsing}
 
 \begin{frame}
-    empty
+    \frametitle{Parsing Methods}
+
+    There're many semantic parsing paradigms.
+
+    Some of them are new methods while others borrow ideas from other domains or tasks to do semantic parsing exactly.
+
+    \begin{itemize}
+        \item Shift-Reduce (LR) (1993)
+        \item Combinatory Categorial Grammar (2005)
+        \item Word Alignment (Synchronized CFG) (2006)
+        \item Generative Model (2008)
+        \item Syntactic Parse to Semantic Parse (2009)
+        \item Weak Supervision and Unsupervised Methods (2010)
+        \item Large-scale SP for Freebase and QA (2013)
+        \item Paraphrase-driven SP (2014)
+        \item Neural Semantic Parsing (2015)
+    \end{itemize}
+
+\end{frame}
+
+\subsection{Shift-Reduce}
+
+\begin{frame}
+    \frametitle{Inductive Logic Programming (Zelle et al., 1993)}
+
+    Shift-Reduce is a simple bottom-up parsing. 
+
+    \begin{center}
+        \includegraphics[height=4.62cm,width=7.55cm]{img/shift-reduce.png}
+    \end{center}
+
+    Each action correspond to a prolog clause.
+    \begin{center}
+        \includegraphics[height=0.6cm,width=6cm]{img/prolog-clause.png}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Inductive Logic Programming (Zelle et al., 1993)}
+
+    CHILL(Constructive Heuristic Induction for Language Learning)
+
+    \begin{itemize}
+        \item Find\_Generalization: merge clauses not cover any negative sample.
+        \item Reduce\_Definition: prefer new clause to prove positive examples
+    \end{itemize}
+
+    \begin{center}
+        \includegraphics[height=6.5cm,width=10cm]{img/inductive-logic.png}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{CHILL on GeoQuery (Zelle et al., 1996)}
+
+    \only<1>{
+        \begin{columns}
+            \column{0.5\textwidth}
+            \includegraphics[height=1.7cm,width=5cm]{img/geoquery-object.png}
+
+            \includegraphics[height=4.5cm,width=6cm]{img/geoquery-meta-predicate.png}
+
+            \column{0.5\textwidth}
+            \includegraphics[height=6.5cm,width=6cm]{img/geoquery-predicate.png}
+        \end{columns}
+    }
+
+    \only<2> {
+        \begin{center}
+            \includegraphics[height=8cm,width=10cm]{img/chill-geoquery-acc.png}
+        \end{center}
+    }
+\end{frame}
+
+\subsection{CCG}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\begin{frame}
+    \frametitle{test}
 \end{frame}
 
 \end{document}
