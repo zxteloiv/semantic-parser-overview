@@ -7,6 +7,7 @@
 \usepackage[nocenter]{qtree}
 \usepackage{tree-dvips}
 \usepackage{amsmath}
+\usepackage{xcolor}
 
 \usepackage{listings}
 
@@ -733,51 +734,386 @@
 \subsection{CCG}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Combinatory Category Grammar (Steedman, 1996, 2000)}
+
+    \only<1> {
+        CCG comes with a lexicon whose element is a pair of word and a category:
+
+        \[
+            \text{borders} := (S \backslash NP) / NP : \lambda x . \lambda y . borders(y, x)
+        \]
+
+        \begin{itemize}
+            \item word: $borders$
+            \item syntactic type: $(S \backslash NP) / NP$
+            \item semantic type: $\lambda x . \lambda y . borders(y, x)$
+        \end{itemize}
+    }
+
+    \only<2> {
+        Categories can be combined.
+
+        \begin{itemize}
+            \item forward and backward application
+
+                \begin{tabular}{rlrl}
+                    A / B : f &+  &B : x        &$\Rightarrow$ A : f(x) \\
+                        B : x &+  &A $\backslash$ B : f &$\Rightarrow$ A : f(x)
+                \end{tabular}
+
+            \item forward and backword composition
+
+                \begin{tabular}{rlrl}
+                    A / B : f &+  &B / C : g   &$\Rightarrow$ A / C : $f\circ g$  \\
+                    A $\backslash$ B : f &+  &B $\backslash$ C : g &$\Rightarrow$
+                        A $\backslash$ C : $f\circ g$  \\
+                \end{tabular}
+
+            \item type raising
+
+                $X \Rightarrow T / (T \backslash X)$
+
+        \end{itemize}
+    }
+
+    \only<3> {
+        A CCG Parse Example.
+
+        \begin{center}
+            \includegraphics[height=2.72cm,width=8.52cm]{img/ccg-parse.png}
+        \end{center}
+    }
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Semantic Parsing using CCG on GeoQuery}
+    \framesubtitle{Zettlemoyer and Collins, 2005}
+
+    Given the lexicon and model parameter, CCG is formulated as a log-linear probablistic model
+    to deal with ambiguity,
+    e.g. duplicated lexicon entries for a word, and spurious ambiguity:
+
+    \[
+        P(L, T \mid S; \bar\theta) = \frac
+            {\exp(\bar f(L,T,S)\cdot\bar\theta)}
+            {\sum_{(L,T)}\exp(\bar f(L,T,S)\cdot\bar\theta)}
+    \]
+
+    And we can do inference on the model:
+
+    \[
+        L = \arg\max_L P(L\mid S;\bar\theta) = \arg\max_L\sum_TP(L,T\mid S;\bar\theta)
+    \]
+
+    Features are designed as local and thus we can use dynamic programming
+    (beam-search acturally) and prune the search space (like CKY-style).
+
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Learning the Model (Zettlemoyer et al. 2005)}
+
+    Learning the parameters using SGD.
+
+    \begin{center}
+        \includegraphics[height=5.69cm,width=7.55cm]{img/learning-algo.png}
+    \end{center}
+
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Learning the Lexicon (Zettlemoyer et al. 2005)}
+
+    \[
+        GENLEX(S,L) = \{x := y \mid x \in W(S), y\in C(L)\}
+    \]
+
+    \begin{itemize}
+        \item W(S) is all subsequence of S
+        \item C(L) produces categories using rules L triggered
+    \end{itemize}
+
+    \begin{center}
+        \includegraphics[height=5.32cm,width=12cm]{img/zc05-triggers.png}
+    \end{center}
+
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Problems in ZC05}
+
+    GENLEX is controlled by rules, and will be insufficient
+    if the rules don't cover all the (S, L) pairs.
+
+    \begin{examples}
+    Through which states does the Mississippi run.
+    \end{examples}
+
+    GENLEX doesn't trigger a category suitable for the \emph{through}-adjunct placed ahead.
+
+    Namely, phrase order may be relaxed.
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Relaxed Combinatory Rules (Zettlemoyer et al., 2007)}
+
+    \begin{itemize}
+        \item relaxed function application
+
+            \includegraphics[height=1cm,width=5cm]{img/ccg-relax-01.png}
+
+        \item relaxed function composition
+
+            \includegraphics[height=1cm,width=6.5cm]{img/ccg-relax-02.png}
+
+        \item role-hypothesising type shifting (for missing predicates)
+
+            \includegraphics[height=0.6cm,width=6cm]{img/ccg-relax-03.png}
+
+        \item null-head type shifting (for missing arguments)
+
+            \includegraphics[height=0.6cm,width=5cm]{img/ccg-relax-04.png}
+
+        \item crossed functional composition
+
+            \includegraphics[height=0.8cm,width=6.5cm]{img/ccg-relax-05.png}
+    \end{itemize}
+
+    Triggers are added for these new rules, too.
+
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Online Learning (Zettlemoyer et al., 2007)}
+
+    Use a peceptron learning instead. New features are also added.
+
+    \begin{center}
+        \includegraphics[height=6.5cm,width=6.42cm]{img/zc07-learn-02.png}
+    \end{center}
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Problems in ZC07}
+
+    GENLEX needs hand-written rules.
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{CCG Induction using Unification (Kwiatkowski et al. 2010)}
+
+    Unification in wikipedia:
+
+    \begin{quotation}
+        Unification is an algorithmic process of solving equations between symbolic expressions.
+        e.g.
+        $\{ cons(x,cons(x,nil)) = cons(2,y) \} \Rightarrow \{  x \to 2, y \to cons(2,nil) \}$
+    \end{quotation}
+
+    Here \emph{unification} aims to {\color[rgb]{0,0,1}find f and g given h}, s.t.
+    \begin{center}
+        $h = \lambda x. f(g(x))$ or $h = f(g)$.
+    \end{center} \pause
+
+    For example, the given initial lexical entry
+    \[
+        \text{New York borders Vermont} \vdash S: next\mathunderscore to(ny, vt)
+    \]
+
+    will be splitted as 
+    \begin{align*}
+        \text{New York borders} &\vdash S / NP : \lambda x . next\_to(ny, vt) \\
+        \text{Vermont}          &\vdash NP : vt
+    \end{align*}
+
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{CCG Induction using Unification (Kwiatkowski et al. 2010)}
+
+    \only<1> {
+        Parsing with PCCG
+        \begin{align*}
+            P(y, z \mid x; \theta, \Lambda) = \frac{\exp(\theta\cdot\phi(x,y,z))}{Z(y',z')} \\
+            f(x) = \arg\max_z p(z\mid x; \theta, \Lambda) \\
+            p(z \mid x; \theta, \Lambda) = \sum_y p(y, z \mid x; \theta, \Lambda)
+        \end{align*}
+
+        Again, to compute the parse efficiently, 
+        \begin{itemize}
+            \item CKY-style parsing with dynamic programming
+            \item summing over y with inside-outside algorithm
+        \end{itemize}
+    }
+
+    \only<2> {
+        Learning algorithm: NEW-LEX will consider whether to split the lexical entries
+        and gives new lexicon from $\arg\max_{y^*}p(y^*\mid x_i, z_i; \theta', \Lambda')$
+        \begin{center}
+            \includegraphics[width=7.25cm,height=6.13cm]{img/unification-learning.png}
+        \end{center}
+    }
+
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Split a lexicon (Kwiatkowski et al. 2010)}
+
+    Split a lexical entry: Step 1, function
+    \[
+        \text{New York borders Vermont} \vdash S: \textcolor{red}{next\_to(ny, vt)}
+    \]
+
+    unification constraints (otherwise infinite-result):
+    \begin{itemize}
+        \item No vacuous variables: $g \ne \lambda x . tex$
+        \item limited coordination extraction: $g$ contains less than N adjuncts
+        \item limited application: $f$ contains no new variables for non-variable
+            subexpression in $h$ like 
+            \begin{align*}
+                h &= \lambda x . in(x, tex) \\
+                f &\to \lambda q . q(tex) \\
+                g &\to \lambda y \lambda x . in(x, y)
+            \end{align*}
+    \end{itemize}
+
+    \pause
+
+    we can get many (f, g) pairs, among which there is: 
+    \[
+        f \to \lambda x . next\_to(ny, x)\,\,\,\,\, g \to vt
+    \]
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Split a lexicon (Kwiatkowski et al. 2010)}
+
+    Split a lexical entry: Step 2, syntactic type
+    \[
+        \text{New York borders Vermont} \vdash \textcolor{red}{S}: next\_to(ny, vt)
+    \]
+
+    \only<1> {
+        According to CCG combinatory rules(only 4 here), define
+        \begin{align*}
+            S_C(A) &= \{FA(A) \cup BA(A) \cup FC(A) \cup BC(A) \}\\
+            FA(X:h)&= \{ (X / Y : f, Y : g) \mid h = f(g) \wedge Y = C(T(g)) \}  \\
+            BA(X:h)&= \{ (Y : g, X \backslash Y : f) \mid h = f(g) \wedge Y = C(T(g)) \}  \\
+            FC(X / Y:h)&= \{ (X / W : f, W / Y : g) \mid
+                h = \lambda x . f(g(x)) \wedge W = C(T(g(x))) \}  \\
+            BC(X \backslash Y:h)&= \{ (W \backslash Y : f, X \backslash W : g) \mid
+                h = \lambda x . f(g(x)) \wedge W = C(T(g(x))) \}
+        \end{align*}
+        where $T: F \to \{e, t, F\}$ is the type function and C is defined as
+        \begin{gather*}
+            C(T) = \begin{cases}
+                NP & \text{ if } T=e \\ 
+                S & \text{ if } T=t \\ 
+                C(T_2)\vert C(T_1)  & \text{ if } T= \langle T_1, T_2\rangle
+            \end{cases}
+        \end{gather*}
+    }
+
+    \only<2> {
+        These are some possible pair from the splitting set.
+        \begin{itemize}
+            \item Semantic: \textcolor{blue}{$(\lambda x . next\_to(ny, x), vt)$}
+
+                Syntactic: $(S/NP, NP)$
+
+            \item Semantic: \textcolor{blue}{$(ny, \lambda x . next\_to(x, vt))$}
+
+                Syntactic: $(NP, S\backslash NP)$
+
+            \item Semantic: \textcolor{red}{$(\lambda x . next\_to(x, vt), ny)$}
+
+                Syntactic: $(S/NP, NP)$
+
+        \end{itemize}
+    }
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Split a lexicon (Kwiatkowski et al. 2010)}
+
+    Split a lexical entry: Step 3, word sequence
+    \[
+        \textcolor{red}{\text{New York borders Vermont}} \vdash S: next\_to(ny, vt)
+    \]
+    Splitting is defined as
+    \[
+        S_L(w_{0:n}\vdash A) = \{(w_{0:i}\vdash B, w_{i+1:n}\vdash C) \mid
+            0 \leq i < n \wedge (B, C) \in S_C(A) \}
+    \] \pause
+    For some specific i, the previous splits may raise problems.
+    \begin{itemize}
+        \item \textcolor{blue}{$(S/NP:\lambda x . next\_to(ny, x), NP:vt)$}
+
+            Sequence: (New York borders, Vermont)
+
+        \item \textcolor{blue}{$(NP:ny, S\backslash NP:\lambda x . next\_to(x, vt))$}
+
+            Sequence: (New York, borders Vermont)
+
+        \item \textcolor{red}{$(S/NP:\lambda x . next\_to(x, vt), NP:ny)$}
+
+            Sequence: (borders Vermont, New York) incorrect
+
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Problems in Kwiatkowski et al. 2010}
+
+    Learned CCG lexicon is too big.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Factored Lexicon in CCG (Kwiatkowski et al 2011)}
+
+    Original lexical entry: $Boston \vdash N / N:\lambda f\lambda x.from(x, bos) \wedge f(x)$
+
+    Factored Parts:
+    \begin{itemize}
+        \item lexeme, pair of a word span and a constant list: $(Boston,[from,bos])$
+        \item template, $\lambda (w, \vec v).(w \vdash N / N:\lambda f\lambda x.v_1(x, v_2) \wedge f(x))$
+    \end{itemize}
+
+    \pause
+
+    Two type of factorization:
+    \begin{enumerate}
+        \item maximal factor: all constants are in lexeme
+
+            $(Boston, [from, bos]),  
+            \lambda (w, \vec v).(w \vdash N / N:\lambda f\lambda x.v_1(x, v_2) \wedge f(x))$
+
+        \item partial factor: some constants remain in the template
+            $(Boston, [bos]), 
+            \lambda (w, \vec v).(w \vdash N / N:\lambda f\lambda x.from(x, v_1) \wedge f(x))$
+
+            Partial factor is used for missing words: \emph{flights Boston to New York}
+    \end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Factored Lexicon in CCG (Kwiatkowski et al 2011)}
+
+    Learning is similar but to consider factorization:
+
+    \begin{center}
+        \includegraphics[width=6.8cm,height=7.34cm]{img/fubl.png}
+    \end{center}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Problems in Kwiatkowski et al. 2011}
+
+    Learned CCG lexicon is too big.
 \end{frame}
 
 \begin{frame}
