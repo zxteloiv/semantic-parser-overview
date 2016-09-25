@@ -1111,17 +1111,75 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{Problems in Kwiatkowski et al. 2011}
+    \frametitle{Ontological Mismatch Problem}
 
-    Learned CCG lexicon is too big.
+    GeoQuery / ATIS dataset is too small. Learning a parser is easy for it.
+    \begin{itemize}
+        \item a few predicates
+        \item a few utterances (more than predicate)
+    \end{itemize} \pause
+
+    If a database has more predicates and thus more capable to answer more questions
+    in theory, the amount of possible utterance can go even further. \pause
+
+    What's worse, new utterances linguistically involve more predicates in theory,
+    but database schema is fixed and supports only limited predicates. \pause
+
+    \begin{itemize}
+        \item parse to more predicates: unusable on databases
+        \item parse to fit the schema: difficult to learn
+    \end{itemize}
+
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{SP with On-the-fly Matching(Kwiatkowski et al., 2013)}
+
+    \begin{center}
+        \includegraphics[width=7.48cm,height=1.98cm]{img/ontological-mismatch.png}
+    \end{center}
+
+    Choose to convert Q1 to MR1, Q2 to MR2, then MR2 to MR1. Using Q-A pairs.
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{SP with On-the-fly Matching(Kwiatkowski et al., 2013)}
+
+    \only<1> {
+        Parsing Framework
+        \begin{itemize}
+            \item Domain-independent parsing
+                
+                use a domain-independent CCG parser(Clark \& Curran, 2007) to convert 
+                the utterance to {\bf underspecified LF}, with a hand-written lexicon
+                \begin{itemize}
+                    \item 59 lexical categories with POS tags, and assign to words based on POS 
+                        tags from Wiktionary.
+                    \item 49 domain-independent lexical items (what, when, and, is, etc.)
+                \end{itemize}
+
+            \item Ontological Matching
+                
+                Use a series of matching operations $M = \langle o_1, o_2, \cdots \rangle$
+                \begin{itemize}
+                    \item Structural Match: Collapse Operator, Expansion Operator
+                    \item Constant Matching (replace in the same type)
+                \end{itemize}
+
+        \end{itemize}
+    }
+
+    \only<2> {
+        \begin{center}
+            \includegraphics[width=11.5cm,height=7cm]{img/ccg-fb-parse.png}
+        \end{center}
+    }
+
+    \only<3> {
+        \begin{center}
+            \includegraphics[width=12cm,height=7cm]{img/ontology-match-ops.png}
+        \end{center}
+    }
 \end{frame}
 
 \begin{frame}
