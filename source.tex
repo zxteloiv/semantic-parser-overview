@@ -18,7 +18,7 @@
 %    NLPR\\
 %    Institute of Automation
 %}
-\date{2016.08}
+\date{2016.09.30}
 %\logo{\includegraphics[height=1.5cm]{lion-logo.png}}
 
 %------------------------------------------------------------
@@ -661,17 +661,18 @@
 
     There're many semantic parsing paradigms.
 
-    Some of them are new methods while others borrow ideas from other domains or tasks to do semantic parsing exactly.
+    Some of them are new methods while others borrow ideas from other domains or
+    tasks to do semantic parsing exactly.
 
     \begin{itemize}
         \item Shift-Reduce (LR) (1993)
-        \item Combinatory Categorial Grammar (2005)
-        \item Word Alignment (Synchronized CFG) (2006)
+        \item {\bf Combinatory Categorial Grammar (2005)}
+        \item {\bf Word Alignment (Synchronized CFG) (2006)}
         \item Generative Model (2008)
-        \item Syntactic Parse to Semantic Parse (2009)
-        \item Weak Supervision and Unsupervised Methods (2010)
-        \item Large-scale SP for Freebase and QA (2013)
-        \item Paraphrase-driven SP (2014)
+        \item {\bf Syntactic Parse to Semantic Parse (2009)}
+        \item {\bf Weak Supervision and Unsupervised Methods (2010)}
+        \item {\bf Large-scale SP for Freebase and QA (2013)}
+        \item {\bf Paraphrase-driven SP (2014)}
         \item Neural Semantic Parsing (2015)
     \end{itemize}
 
@@ -1180,16 +1181,323 @@
             \includegraphics[width=12cm,height=7cm]{img/ontology-match-ops.png}
         \end{center}
     }
+
+    \only<4> {
+        Parsing and Learning:
+        \begin{align*}
+            Parse(x, O) &= {\arg \max}_{d\in GEN(x,O)} (Score(d)) \\
+            Score(d)  &= \phi(d) \theta \\
+            &= \phi(\Pi)\theta + \sum_{o\in M}\phi(o)\theta
+        \end{align*}
+        \begin{center}
+            \includegraphics[width=7.26cm,height=4cm]{img/ccg-fb-learning.png}
+        \end{center}
+    }
+
+    \only<5> {
+        Features:
+        \begin{itemize}
+            \item CCG Parse Features(Pi): \#u\_category, \#(word, category), \#(POS, category)
+            \item Structural Features(M): identity of complex-typed const., domain-indep. const.
+            \item Lexical Features(M): for $(c_u, c_O)$, $\phi_{np}$, $\phi_{stem}$,
+                $\phi_{syn}$, $\phi_{fp:stem}$, $\phi_{def\_overlap}$
+
+            \item Knowledge Base Features: exec y on K, $\phi_{direct}$, $\phi_{join}$,
+                $\phi_{empty}$, $\phi_0$, $\phi_1$
+        \end{itemize}
+    }
 \end{frame}
+
+\begin{frame}
+    \frametitle{Other CCG Works}
+    \begin{itemize}
+        \item Artzi et al., TACL2013, Weakly Supervised Learning of Semantic Parsers
+            for Mapping Instructions to Actions
+
+            Modeling robot instruction and get feedback from robot action.
+
+        \item Reddy et al., TACL2014, Large-scale Semantic Parsing without Question-Answer Pairs
+
+            Use ClueWeb09 and FACC1, and general CCG parser to build a LF,
+            which is then converted to an ungrounded graph sharing commonalities with Freebase.
+
+        \item Artzi et al., EMNLP2015, Broad-coverage CCG Semantic Parsing with AMR
+
+            To deal with co-reference in AMR, use Skolem Terms (Steedman, 2011) to build
+            an underspecified LF, which is then mapped to specified LF.
+
+    \end{itemize}
+\end{frame}
+
+\subsection{Word Alignments}
+
+\begin{frame}
+    \frametitle{Learning SP with SMT(Wong and Mooney, 2006)}
+    \only<1> {
+        Synchronized CFG rule: $X \to \langle \alpha, \beta \rangle$
+        (pattern \& template)
+        \begin{center}
+            \includegraphics[width=7.88cm,height=2.94cm]{img/scfg-rule.png}
+
+            \includegraphics[width=11.74cm,height=3.64cm]{img/scfg-parse.png}
+        \end{center}
+    }
+
+    \only<2> {
+        Parsing: enumerate derivations that gives $\langle e, f \rangle$
+        \begin{align*}
+            f^* &= m(\arg\max_{\mathrm{d}\in D(G\mid e)}\Pr(\mathrm{d}\mid e; \lambda)) \\
+            \Pr_\lambda(d\mid e) &= \frac{1}{Z_\lambda(e)}\exp\sum_i\lambda_i f_i(d)
+        \end{align*}
+        Features (3000 or so):
+        \begin{itemize}
+            \item number of each rule r is used in derivation
+            \item number of each word w generated from gaps
+        \end{itemize}
+
+        Parameter Estimation: 
+
+        Viterbi algorithm is used for efficient decoding.
+
+        Since gold derivation is latent, EM is used to find the optimal parameters.
+    }
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Learning SP with SMT(Wong and Mooney, 2006)}
+
+    Grammar rules acquisition:
+
+    \only<1> {
+        Step 1, suppose we know the grammar, LF can be convert to a production (rule) sequence
+        of the left-most top-down derivation (by convention).
+
+        We prefer derivation sequence over LF because MR may be not well-formed
+        without grammar and MR tokens can be polysemy or carry no specific meaning.
+
+        \begin{examples}[Sentence and LF from RoboCup]
+            ((bowner our \{4\}) \\
+            (do our \{6\} (pos (left (half our))))) \\
+            If our player 4 has the ball, \\
+            then our player 6 should stay in the left side of our half.
+        \end{examples}
+    }
+
+    \only<2>{
+        Step 2, use GIZA++ to find alignment between words and derivation rules.
+
+        \begin{center}
+            \includegraphics[width=10.48cm,height=3.18cm]{img/wong-align.png}
+        \end{center}
+    }
+
+    \only<3> {
+        Step 3, extract bottom up, starting with rules where RHS contains only terminals,
+        then those whose RHS contains non-terminals.
+        \begin{center}
+            \includegraphics[width=10.48cm,height=3.18cm]{img/wong-align.png}
+        \end{center}
+        \begin{align*}
+            UNUM &\to \langle 4, 4 \rangle \\
+            TEAM &\to \langle our, our \rangle \\
+            CONTITION &\to \langle TEAM \text{ player } UNUM \text{ has \{1\} ball }, \\
+                & (bowner\, TEAM\, \{UNUM\})\rangle
+        \end{align*}
+    }
+
+    \only<4> {
+        Step 3 special case: rule that doesn't derive any terminal, and that break links
+        outside this sub-parse tree.
+        \begin{center}
+            \includegraphics[width=9.86cm,height=1.9cm]{img/phrasal-coherence.png}
+        \end{center}
+
+        Merge the rules as: $REGION \to (\text{left } (\text{penalty-area } TEAM)$
+
+        For excessively merged rules (overfitting), try a greedy link-removal policy
+        (alignment fixing).
+    }
+\end{frame}
+
+\begin{frame}
+    \frametitle{SCFG with Lambda Calculus(Wong and Mooney, 2007)}
+    Use lambda expression for semantic function instead. To improve NL-ML isomorphism,
+    find a MST on a graph where edges between rules are established for any shared variable and 
+    weighted by the minimal word distance.
+    \begin{center}
+        \includegraphics[width=12cm,height=6cm]{img/nl-ml-isomorphism.png}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data Recombination (Jia and Liang, 2016)}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Generative Models}
+
+    \only<1> {
+        Hybrid Tree (Lu et al., 2008)
+
+        \includegraphics[width=7cm,height=1.3cm]{img/hybrid-tree-model.png}
+
+        \begin{columns}
+            \column{0.5\textwidth}
+
+            \includegraphics[width=7cm,height=5cm]{img/hybrid-tree-sample.png}
+            \column{0.5\textwidth}
+            \includegraphics[width=4.6cm,height=3.6cm]{img/hybrid-tree-generation.png}
+        \end{columns}
+    }
+
+    \only<2> {
+        Learning with Less Supervision (Liang et al., 2009)
+
+        Given a World State paired with several sentences.
+        \begin{center}
+            \includegraphics[width=11cm,height=3.0cm]{img/weather-report.png}
+        \end{center}
+        \[
+            p(r, f, c, w \mid s) = p(r \mid s)p(f \mid r)p(c, w \mid r, f, s)
+        \]
+        \begin{center}
+            \includegraphics[width=11cm,height=2.7cm]{img/world-state-model.png}
+        \end{center}
+    }
+
+\end{frame}
+
+\subsection{Semantic Parsing from Syntactic Parses}
+
+\begin{frame}
+    \frametitle{Using an Syntactic Parse(Ge and Mooney, 2009)}
+    \only<1> {
+        Parser Components:
+        \begin{itemize}
+            \item an existing syntactic parser
+            \item a learned lexicon from words to predicates
+            \item a learned set of composition rules
+        \end{itemize}
+
+        Assumption: unambiguous CFG of LF is known
+        \begin{center}
+            \includegraphics[width=7cm,height=4cm]{img/robocup-mr-grammar.png}
+        \end{center}
+    }
+
+    \only<2> {
+        Parse from bottom-up:
+        \begin{center}
+            \includegraphics[width=6cm,height=5cm]{img/sapt-parse-01.png}
+            \includegraphics[width=6cm,height=5cm]{img/sapt-parse-02.png}
+        \end{center}
+    }
+
+    \only<3> {
+        Not all semantic sub-tree strictly follows the syntactic derivation.
+        Introduce macro-predicates when children MRs can't combine.
+        \begin{itemize}
+            \item become as an argument if the child MR is complete
+            \item otherwise become as part of the predicate
+        \end{itemize}
+
+        \begin{center}
+            \includegraphics[width=12cm,height=5cm]{img/sapt-parse-macro-predicate.png}
+        \end{center}
+    }
+\end{frame}
+
+\begin{frame}
+    \frametitle{Using an Syntactic Parse(Ge and Mooney, 2009)}
+    Learning:
+    \begin{itemize}
+        \item lexicon is learned with GIZA++ (like Wong and Mooney, 2006)
+            \begin{itemize}
+                \item if a predicate is not aligned to any word, the predicate is inferred
+                    and just bound to their values in MR
+                \item if a predicate is aligned to several word, split it to several alignments
+            \end{itemize}\pause
+        \item composition rules is learned in the form $\Lambda_1.P_1 + \Lambda_2.P_2
+            \Rightarrow \{\Lambda_p.P_p,R\}$
+            \[
+                \langle \lambda a_1\lambda a_2\rangle . P\_PLAYER + P\_UNUM \Rightarrow
+                \{\lambda a_1.P\_PLAYER, a_2=c_2\}
+            \]
+        \item disambiguation model: max-ent with L-BFGS
+            \[
+                \Pr(D\mid S,T;\bar\theta)=\frac{\exp\sum_i\theta_if_i(D)}{Z(S,T)}
+            \]
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Transforming Dep. Parse (Reddy et al., 2016)}
+    Parsing:
+    \only<1> {
+        \begin{itemize}
+            \item binarize dep parse to S-expr.
+            \item substitution symbols with $\lambda$-expr
+            \item hierarchical composition(beta-reduction)
+        \end{itemize}
+
+        \begin{center}
+            \includegraphics[width=7cm,height=4.5cm]{img/reddy-parse-dep.png}
+        \end{center}
+    }
+
+    \only<2> {
+        Follow Reddy et al. 2014 to transform to grounded graph.
+
+        New operators to deal with mismatch between dep and semantic parse:
+        \begin{itemize}
+            \item CONTRACT: merge some nodes and edges into a single node
+            \item EXPAND: add edges for some disjoint nodes (errors in depparse)
+        \end{itemize}
+
+        \begin{center}
+            \includegraphics[width=5.3cm,height=4cm]{img/contract-op.png}
+        \end{center}
+    }
+\end{frame}
+
+\begin{frame}
+    \frametitle{Other works for SynParse to SemParse}
+
+    \begin{itemize}
+        \item Incremental Parser for AMR (Damonte et al. 2016)
+
+            A greedy transition-based parser for AMR, inspired by former work of
+            transition-based syntactic parser ArcEager (Nivre 2004, 2008),
+            using an existing dep-parser.
+
+        \item Imitation learning for AMR(Goodman et al., 2016)
+
+            A transition-based parser with imitation learning, extended by techniques
+            like \emph{noise reduction} and \emph{targeted exploration},
+            using an existing dep-parser.
+
+    \end{itemize}
+\end{frame}
+
+\subsection{Weak and Unsupervised Parser}
+\begin{frame}
+    \frametitle{test}
+\end{frame}
+
+\subsection{SP with Freebase and QA System}
 
 \begin{frame}
     \frametitle{test}
 \end{frame}
 
+\subsection{Paraphrase-driven Parsing}
+
 \begin{frame}
     \frametitle{test}
 \end{frame}
 
+\subsection{Neural Semantic Parsing}
 \begin{frame}
     \frametitle{test}
 \end{frame}
