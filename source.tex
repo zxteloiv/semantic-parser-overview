@@ -671,7 +671,7 @@
         \item Generative Model (2008)
         \item {\bf Syntactic Parse to Semantic Parse (2009)}
         \item {\bf Weak Supervision and Unsupervised Methods (2010)}
-        \item {\bf Large-scale SP for Freebase and QA (2013)}
+        \item Large-scale SP for Freebase and QA (2013)
         \item {\bf Paraphrase-driven SP (2014)}
         \item Neural Semantic Parsing (2015)
     \end{itemize}
@@ -1322,7 +1322,7 @@
 
 \begin{frame}
     \frametitle{SCFG with Lambda Calculus(Wong and Mooney, 2007)}
-    Use lambda expression for semantic function instead. To improve NL-ML isomorphism,
+    Use lambda expression for semantic function instead. To improve NL-MR isomorphism,
     find a MST on a graph where edges between rules are established for any shared variable and 
     weighted by the minimal word distance.
     \begin{center}
@@ -1332,6 +1332,20 @@
 
 \begin{frame}
     \frametitle{Data Recombination (Jia and Liang, 2016)}
+
+    \only<1> {
+        Fit a new model in SCFG using 3 kinds of policies.
+        Then draw training examples from it.
+
+        \begin{center}
+            \includegraphics[width=5cm,height=6cm]{img/data-recombinant-system.png}
+        \end{center}
+    }
+    \only<2> {
+        \begin{center}
+            \includegraphics[width=12cm,height=7cm]{img/data-recombinant-example.png}
+        \end{center}
+    }
 \end{frame}
 
 \begin{frame}
@@ -1482,16 +1496,197 @@
 
 \subsection{Weak and Unsupervised Parser}
 \begin{frame}
-    \frametitle{test}
+    \frametitle{SP from World's Response(Clarke et al., 2010)}
+    \only<1> {
+        Parsing: $ \hat z = F_w(x)={\arg\max}_{y\in Y,z\in Z}w^T\Phi(x,y,z) $
+
+        Learning:
+        \begin{columns}
+            \column{0.5\textwidth}
+            \includegraphics[width=6cm,height=6cm]{img/response-learning-direct.png}
+            \column{0.5\textwidth}
+            \includegraphics[width=6cm,height=6cm]{img/response-learning-aggressive.png}
+        \end{columns}
+    }
+    
+    \only<2-> {
+        Parsing: In order to adapt to unseen inputs, consider the entire meaning space
+        instead of rule extraction from training data.
+        \begin{align*}
+            F_w(x)
+            &={\arg\max}_{y,z}w^T\Phi(x,y,z) \\
+            &={\arg\max}_{\alpha,\beta}\sum_{c\in X}\sum_{s\in D}\alpha_{cs}\cdot w^T\Phi_1
+            + \sum_{c,d\in X}\sum_{s,t\in D}\beta_{cs,dt}\cdot w^T\Phi_2
+        \end{align*}
+    }
+
+    \only<3> {
+        \begin{itemize}
+            \item $\alpha$: word span $c$ aligned with symbol $s$
+            \item $\beta$: word span $d$ aligned with $t$, when $\alpha$ is activated
+        \end{itemize}
+
+        such that
+
+        \begin{itemize}
+            \item A consituent is associated with 1 symbol
+            \item beta(cs,dt) activated iff. alpha(cs) and alpha(dt) activated
+            \item beta(cs,dt) activated then s is a function and (s, t) is type-consistent
+            \item functional composition is directional and acyclic
+        \end{itemize}
+    }
+
+    \only<4>{
+        Features Used:
+        \begin{itemize}
+
+            \item 1st-order: stemmed word match
+            \item 1st-order: similarity based on WordNet (Do et al. 2010)
+            \item 2nd-order: normalized distance of the head words in c and d
+                for beta(cs, dt) on the dependency tree of sentence
+            \item 2nd-order: symbol concurrence frequency (regardless of alignments)
+        \end{itemize}
+    }
 \end{frame}
 
-\subsection{SP with Freebase and QA System}
+\begin{frame}
+    \frametitle{Confidence-driven Unsupervised SP (Goldwasser 2011)}
+    \only<1> {
+        What is ``confidence-driven unsupervised method'':
+        \begin{itemize}
+            \item Idea: if a pattern is produced multiple times from non-random model,
+                it is likely to be an indication of an underlying phenomenon in the data.
+
+            \item Confidence: Output structures close to the center of statistic mass
+                will receive a high confidence score.
+
+            \item Confidence-driven: the model will be significantly improved
+                compared with using only prediction score $w^T\Phi(x,y,z)$
+        \end{itemize}
+
+        Parsing is the same with Clarke et al. 2010, formulated as an ILP problem.
+    }
+
+    \only<2> {
+        \begin{columns}
+            \column{0.5\textwidth}
+            Confidence:
+
+            (1). translation model
+            \begin{itemize}
+
+                \item unigram $p(z\mid x)=\prod_{i=1}^{\vert z\vert} p(s_i\mid y(s_i))$
+                \item bigram $p(z\mid x)=\prod_{i=1}^{\vert z\vert}
+                    p(s_{i-1}(s_i)\mid y(s_{i-1}),y(s_i))$
+            \end{itemize}
+            (2). structural proportion
+            \begin{itemize}
+                \item Prop(x, z): proportion of \#pred\_in\_z and \#words\_in\_x
+                \item AvProp(S): Average over sets
+                \item PropScore(S, (x,z)) = AvProp(S) - Prop(x, z)
+            \end{itemize}
+
+            combined: use (2) to filter candidates and (1) to rank items
+
+            \column{0.5\textwidth}
+            \includegraphics[width=6cm,height=7.5cm]{img/confidence-unsupervised-learning.png}
+
+        \end{columns}
+    }
+\end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Grounded Unsupervised SP(Poon, 2013)}
+
+    \only<1> {
+        Parsing Idea:
+        \begin{itemize}
+            \item Annotate states to nodes and edges of a dep-parse
+            \item No need to train specific tokens: datetime, numerics, logical op.
+        \end{itemize}
+
+        States:
+        \begin{itemize}
+            \item ``states'' are from DB schema: entity / attribute
+            \item complex states are included for mismatching of depparse \& semantic
+        \end{itemize}
+
+        Inference:
+        \begin{align*}
+            z^* &= \arg\max_z P_\theta(d, z) \\
+            P_\theta(d,z) &= \frac{1}{Z}\exp\sum_if_i(d,z)\cdot w_i(d,z)
+        \end{align*}
+
+        Learning:
+        \[
+            \theta^* = \arg\max\sum_{d\in D}\log\sum_zP_\theta(d,z)
+        \]
+    }
+
+    \only<2> {
+        \begin{quotation}
+            get flight from toronto to san diego stopping in dtw.
+        \end{quotation}
+        \begin{center}
+            \includegraphics[width=8.64cm,height=7.12cm]{img/grounded-unsupervised-parse.png}
+        \end{center}
+    }
+\end{frame}
+
+\begin{frame}
+    \frametitle{SP on Freebase and QA}
+    \begin{itemize}
+        \item Cai and Yates, 2013a, 2013b
+
+            They discuss methods to use an existing parser in new domain.
+
+        \item Berant et al., 2013
+
+            Collect WebQuestions dataset.
+
+        \item Yih et al., 2014
+            
+            A CNN-based Semantic Model (CNNSM)
+
+        \item Yih et al., 2015
+
+            Staged Query Graph Generation. Find a core inferential chain executed on Freebase.
+
+        \item Pasupat and Liang, 2015
+
+            SP on semi-structured tables. Propose a dataset of tables and adopt a method to 
+            convert tables to knowledge graph first.
+
+    \end{itemize}
 \end{frame}
 
 \subsection{Paraphrase-driven Parsing}
+
+\begin{frame}
+    \frametitle{Paraphrase Comparision}
+
+    \begin{itemize}
+        \item (Berant and Liang, 2014): paraphrase independent with KB, using two kinds
+            of templates
+        \item (Chen et al. 2016): direct paraphrase, using wiktionary
+    \end{itemize}
+
+    \begin{center}
+        \includegraphics[width=9.48cm,height=5.28cm]{img/paraphrase.png}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{SP via Paraphrasing(Berant and Liang, 2014)}
+    \begin{align*}
+        p_\theta(c, z\mid x) &= \frac{1}{Z}\exp(\phi(x,c,z)^T\theta) \\
+        \phi(x,c,z)^T\theta &= \phi_{pr}(x,c)^T\theta_{pr} + \phi_{lf}(x,z)^T\phi_{lf}
+    \end{align*}
+
+    \begin{center}
+        \includegraphics[width=12cm,height=6cm]{img/paraphrase-template.png}
+    \end{center}
+\end{frame}
 
 \begin{frame}
     \frametitle{test}
