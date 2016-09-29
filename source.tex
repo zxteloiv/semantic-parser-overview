@@ -1689,12 +1689,87 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Building SP Overnight (Wang et al. 2015)}
+
+    Build an SP for a new Domain (8 published datasets):
+    \begin{columns}
+        \column{0.5\textwidth}
+        \begin{itemize}
+            \item Human write a lexicon
+            \item The domain-general grammar G induces canonical LFs and utterances
+            \item Crowdsourcing to rewrite the awkward utterances into fluent ones
+            \item Train a parser using the grammar G, by paraphrasing
+        \end{itemize}
+        \column{0.5\textwidth}
+        \includegraphics[width=6cm,height=7.2cm]{img/sp-overnight.png}
+    \end{columns}
 \end{frame}
 
 \subsection{Neural Semantic Parsing}
 \begin{frame}
-    \frametitle{test}
+    \frametitle{Sequence-based SP (Xiao et al., 2016)}
+    \only<1> {
+        Vinyals et al. 2015 proved successful to use sequence model on grammar parsing.
+        Xiao et al. compaired various sequence forms based on SPO(Wang et al. 2015).
+        \begin{itemize}
+            \item LF as raw token sequence
+            \item DSP (Derivation Sequence Prediction)
+            \item DSP-C (Constrained), use grammar to constrain the next rule at testing time
+            \item DSP-CL (Constrained Loss), $p'(y_t)$ is normalized only over possible values
+            \item CFP (Canonical Form Prediction), predict CF instead which is then parsed to LF
+        \end{itemize}
+    }
+    \only<2> {
+        \begin{center}
+            \includegraphics[width=12cm,height=4cm]{img/seq-comparison.png}
+        \end{center}
+    }
+\end{frame}
+
+\begin{frame}
+    \frametitle{Parsing with Neural Attention(Dong and Lapata, 2016)}
+    The Seq2Tree model that also learns latent grammar.
+    \begin{center}
+        \includegraphics[width=7cm,height=7cm]{img/seq-to-tree.png}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Result Comparison}
+    \begin{columns}
+        \column{0.5\textwidth}
+        \includegraphics[width=6cm,height=5cm]{img/result-geoquery.png}
+        \column{0.5\textwidth}
+        \includegraphics[width=6cm,height=5cm]{img/result-atis.png}
+    \end{columns}
+
+    \vspace*{\baselineskip}
+
+    AMR Parsing(F1: 70 Goodman et al. 2016) and WebQuestions(F1: 52.5 Yih et al. 2015)
+\end{frame}
+
+\section{Summary}
+\begin{frame}
+    \frametitle{Summary}
+    Problems:
+    \begin{itemize}
+        \item LF not Well-Formed
+
+            particularly in Neural SP methods, use existing grammar or learned grammar.
+
+        \item Ontology Mismatching
+
+            paraphrasing or other two-phase parsing.
+
+        \item Utterance Explosion
+
+            prefer expansion from meaning space over rule extraction from training data.
+
+        \item Isomorphism between NL(or Syntactic Parse) and Semantic Parse
+
+            add relaxing extensions because NL isn't strict and syn-parse may introduce errors.
+
+    \end{itemize}
 \end{frame}
 
 \end{document}
